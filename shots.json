@@ -1,5 +1,1 @@
-[
-  { "file": "1-checklist.jpg", "path": "/", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "2-silver.jpg", "path": "/", "grade": "silver", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "3-bronze.jpg", "path": "/", "grade": "bronze", "scroll": 1400, "viewport": { "width": 1280, "height": 800 } }
-]
+[{"file":"1-cover.jpg","path":"/?shot=1","shows":"Checklist with demo progress (13 of 55 earned), spoiler shield on, and the detail pane open on The Shootist with its cited guide and tracked-count stepper (31 of 42 Shooting Range challenges).","viewport":{"height":800,"width":1280}},{"file":"2-roadmap.jpg","path":"/?shot=2","shows":"The six-stage platinum roadmap with each stage's rationale, its trophies in roadmap order with earned checkmarks, missable flags, and per-stage progress.","viewport":{"height":800,"width":1280}},{"file":"3-missables.jpg","path":"/?shot=3","shows":"The missables view: the method note explaining the conservative flagging rule, then the flagged trophies with their missable rationale and full guide.","viewport":{"height":800,"width":1280}},{"file":"4-activities.jpg","path":"/?shot=4","shows":"Checklist filtered to Activities with counters in the rows (140 / 250 stunts, 31 / 42 challenges) and the detail pane open on Maximum Withdrawal.","viewport":{"height":800,"width":1280}}]
