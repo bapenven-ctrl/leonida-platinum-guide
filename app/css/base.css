@@ -121,6 +121,7 @@ main { padding: 4px 22px 18px; }
 .tag.grade-platinum { color: var(--plat); } .tag.grade-gold { color: var(--gold); }
 .tag.grade-silver { color: var(--silver); } .tag.grade-bronze { color: var(--bronze); }
 .tag.miss { color: #171310; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+.tag.watch { color: #171310; background: #f0b93e; border-color: #f0b93e; font-weight: 700; }
 .tag.count { color: var(--accent); border-color: var(--accent); }
 .empty { color: var(--muted); padding: 18px; }
 
@@ -157,6 +158,10 @@ main { padding: 4px 22px 18px; }
   color: var(--text); background: var(--panel); margin-bottom: 12px;
 }
 .method-note strong { color: var(--accent); }
+.watch-head { font-size: 19px; margin: 20px 0 10px; color: #f0b93e; }
+.miss-card.watch-card { border-color: #f0b93e; }
+.miss-card.watch-card h2 .n { color: #f0b93e; }
+.miss-card.watch-card .prog { color: #f0b93e; }
 
 /* Footer */
 .site-foot { border-top: 1px solid var(--line); padding: 14px 22px 22px; color: var(--muted); font-size: 13px; }

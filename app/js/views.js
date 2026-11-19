@@ -47,6 +47,7 @@ function kindLabel(kind) {
 function shortSourceName(name) {
   if (name.includes('Exophase')) return 'Exophase (official list)';
   if (name.includes('PSNProfiles')) return 'PSNProfiles (counts)';
+  if (name.includes('PowerPyx')) return 'PowerPyx (watch report)';
   if (name.includes('Leonida Platinum')) return 'Leonida Platinum roadmap notes';
   return name;
 }
@@ -56,6 +57,7 @@ function shortSourceName(name) {
 function rowSourceName(name) {
   if (name.includes('Exophase')) return 'Exophase';
   if (name.includes('PSNProfiles')) return 'PSNProfiles';
+  if (name.includes('PowerPyx')) return 'PowerPyx';
   if (name.includes('Leonida Platinum')) return 'Leonida Platinum roadmap notes';
   return name;
 }
@@ -107,12 +109,13 @@ function rowHtml(trophy, progress, selectedId) {
   const count = trophy.count != null
     ? `<span class="tag count">${progress.counters[trophy.id] ?? 0} / ${trophy.count}${esc(shortUnit(trophy.countLabel))}</span>` : '';
   const miss = trophy.missable ? `<span class="tag miss">MISSABLE</span>` : '';
+  const watch = trophy.watch ? `<span class="tag watch">WATCH</span>` : '';
   const sourceLine = trophy.sources.map((s) => rowSourceName(s.name)).join(' · ');
   return `<button type="button" class="row${earned ? ' earned' : ''}${trophy.id === selectedId ? ' selected' : ''}" data-row="${trophy.id}">
     <input type="checkbox" data-check="${trophy.id}" ${earned ? 'checked' : ''} aria-label="Mark ${esc(trophy.name)} earned">
     <span class="dot ${trophy.grade}"></span>
     <span class="body"><span class="name">${esc(name)}</span><br><span class="desc">${esc(desc)}</span><br><span class="srcline">Sources: ${esc(sourceLine)}</span></span>
-    <span class="tags">${miss}${count}<span class="tag grade-${trophy.grade}">${gradeLabel(trophy.grade)}</span><span class="tag">${kindLabel(trophy.kind)}</span></span>
+    <span class="tags">${miss}${watch}${count}<span class="tag grade-${trophy.grade}">${gradeLabel(trophy.grade)}</span><span class="tag">${kindLabel(trophy.kind)}</span></span>
   </button>`;
 }
 
@@ -133,6 +136,8 @@ function detailHtml(trophy, progress) {
   const sources = trophy.sources.map((s) => s.url
     ? `<a href="${esc(s.url)}" rel="noopener">${esc(s.name)}</a>`
     : esc(s.name)).join(' · ');
+  const watchBox = trophy.watch ? `
+    <p class="watch-box" style="margin:2px 0 10px;padding:7px 9px;background:#2a2417;border:1px solid #4a3f22;border-left:3px solid #f0b93e;border-radius:6px;font-size:12.5px;line-height:1.5;color:#ece7dd"><strong style="color:#f0b93e">Missable watch — unconfirmed.</strong> ${esc(trophy.watchNote)}</p>` : '';
   return `<div class="detail">
     <h2>${esc(hidden ? SHIELD_TEXT : trophy.name)}</h2>
     <p class="official">“${esc(hidden ? 'Hidden until earned.' : trophy.description)}”</p>
@@ -140,9 +145,11 @@ function detailHtml(trophy, progress) {
       <span class="tag grade-${trophy.grade}">${gradeLabel(trophy.grade)}</span>
       <span class="tag">${kindLabel(trophy.kind)}</span>
       ${trophy.missable ? '<span class="tag miss">MISSABLE</span>' : ''}
+      ${trophy.watch ? '<span class="tag watch">WATCH</span>' : ''}
       <span class="tag">${earned ? 'Earned' : 'Unearned'}</span>
     </div>
     <p class="sources sources-top" style="margin:2px 0 10px;padding:7px 9px;background:#1d2431;border:1px solid #2a3242;border-left:3px solid #ff6b4a;border-radius:6px;font-size:12.5px;line-height:1.5;color:#ece7dd"><strong style="color:#ff6b4a">Sources:</strong> ${sources}</p>
+    ${watchBox}
     ${stepper}
     <h3>What to do</h3><p>${esc(parts.what)}</p>
     ${parts.how ? `<h3>Where &amp; how</h3><p>${esc(parts.how)}</p>` : ''}
@@ -182,7 +189,7 @@ export function renderRoadmap(main, trophies, progress) {
     const items = list.map((t) => {
       const earned = progress.earned.includes(t.id);
       const hidden = isShielded(t, progress);
-      return `<li class="${earned ? 'done' : ''}">${earned ? '✓ ' : ''}${esc(hidden ? SHIELD_TEXT : t.name)}${t.missable ? ' — MISSABLE' : ''}</li>`;
+      return `<li class="${earned ? 'done' : ''}">${earned ? '✓ ' : ''}${esc(hidden ? SHIELD_TEXT : t.name)}${t.missable ? ' — MISSABLE' : ''}${t.watch ? ' — WATCH' : ''}</li>`;
     }).join('');
     return `<section class="stage"><h2><span class="n">Stage ${s.n}</span> — ${esc(s.title)}</h2>
       <p class="why">${esc(s.why)}</p>
@@ -193,7 +200,7 @@ export function renderRoadmap(main, trophies, progress) {
 
 export function renderMissables(main, trophies, progress) {
   const flagged = trophies.filter((t) => t.missable);
-  const note = `<div class="method-note"><strong>How these were flagged.</strong> Flagged from the official descriptions alone: a trophy is flagged only when its description ties it to a partner sequence or a named one-time mission location. Every other trophy's description shows no one-time window, so it is treated as earnable any time.</div>`;
+  const note = `<div class="method-note"><strong>How these were flagged.</strong> The confirmed flags above come from the official descriptions alone: a trophy is flagged only when its description ties it to a partner sequence or a named one-time mission location. Every other trophy's description shows no one-time window, so it is treated as earnable any time. Separately, the watch list below carries one item flagged by community guides rather than the descriptions — Positive Mental Attitude, reported by PowerPyx — which stays unconfirmed and is not counted among the confirmed missables.</div>`;
   const cards = flagged.map((t) => {
     const earned = progress.earned.includes(t.id);
     const sourceLine = t.sources.map((s) => shortSourceName(s.name)).join(' · ');
@@ -205,5 +212,20 @@ export function renderMissables(main, trophies, progress) {
       <p class="prog">${earned ? '✓ Earned' : 'Not yet earned'} · Roadmap stage ${t.stage} · ${gradeLabel(t.grade)}</p>
     </section>`;
   }).join('');
-  main.innerHTML = note + cards;
+  const watched = trophies.filter((t) => t.watch && !t.missable);
+  const watchCards = watched.map((t) => {
+    const earned = progress.earned.includes(t.id);
+    const sourceLine = t.sources.map((s) => shortSourceName(s.name)).join(' · ');
+    return `<section class="miss-card watch-card"><h2><span class="n">Watch</span> — ${esc(t.name)}</h2>
+      <p class="official">“${esc(t.description)}”</p>
+      <p class="why">${esc(t.watchNote)}</p>
+      <p>${esc(t.guide)}</p>
+      <p class="sources" style="margin:6px 0;font-size:12.5px;line-height:1.5;color:#ece7dd">Sources: ${esc(sourceLine)}</p>
+      <p class="prog">${earned ? '✓ Earned' : 'Not yet earned'} · Roadmap stage ${t.stage} · ${gradeLabel(t.grade)}</p>
+    </section>`;
+  }).join('');
+  const watchSection = watched.length
+    ? `<h2 class="watch-head">Watch list — reported, not confirmed</h2>` + watchCards
+    : '';
+  main.innerHTML = note + cards + watchSection;
 }

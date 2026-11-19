@@ -24,7 +24,7 @@ if (shot) {
   progress = demoProgress();
   if (shot === '1') {
     view = 'checklist';
-    selectedId = 17;
+    selectedId = 28;
     progress.spoiler = true;
   } else if (shot === '2') {
     view = 'roadmap';
