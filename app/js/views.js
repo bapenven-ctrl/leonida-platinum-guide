@@ -44,6 +44,13 @@ function kindLabel(kind) {
   return { story: 'Story', collectibles: 'Collectibles', activities: 'Activities' }[kind] || kind;
 }
 
+function shortSourceName(name) {
+  if (name.includes('Exophase')) return 'Exophase (official list)';
+  if (name.includes('PSNProfiles')) return 'PSNProfiles (counts)';
+  if (name.includes('Leonida Platinum')) return 'Leonida Platinum roadmap notes';
+  return name;
+}
+
 // A guide is written as three movements: what to do, where and how, and the
 // timing. Split it back into those labelled parts for the detail pane.
 export function guideParts(guide) {
@@ -117,12 +124,12 @@ function detailHtml(trophy, progress) {
       ${trophy.missable ? '<span class="tag miss">MISSABLE</span>' : ''}
       <span class="tag">${earned ? 'Earned' : 'Unearned'}</span>
     </div>
+    <p class="sources sources-top" style="margin:2px 0 10px;padding:7px 9px;background:#1d2431;border:1px solid #2a3242;border-left:3px solid #ff6b4a;border-radius:6px;font-size:12.5px;line-height:1.5;color:#ece7dd"><strong style="color:#ff6b4a">Sources:</strong> ${sources}</p>
     ${stepper}
     <h3>What to do</h3><p>${esc(parts.what)}</p>
     ${parts.how ? `<h3>Where &amp; how</h3><p>${esc(parts.how)}</p>` : ''}
     <h3>When it can be missed</h3><p>${esc(trophy.missable ? trophy.missableNote : parts.when || trophy.missableNote)}</p>
     <h3>Roadmap stage</h3><p>Stage ${stage.n} — ${esc(stage.title)}. ${esc(stage.why.split('.')[0])}.</p>
-    <h3>Sources</h3><p class="sources">${sources}</p>
   </div>`;
 }
 
@@ -158,10 +165,12 @@ export function renderMissables(main, trophies, progress) {
   const note = `<div class="method-note"><strong>How these were flagged.</strong> Flagged from the official descriptions alone: a trophy is flagged only when its description ties it to a partner sequence or a named one-time mission location. Every other trophy's description shows no one-time window, so it is treated as earnable any time.</div>`;
   const cards = flagged.map((t) => {
     const earned = progress.earned.includes(t.id);
+    const sourceLine = t.sources.map((s) => shortSourceName(s.name)).join(' · ');
     return `<section class="miss-card"><h2><span class="n">Missable</span> — ${esc(t.name)}</h2>
       <p class="official">“${esc(t.description)}”</p>
       <p class="why">${esc(t.missableNote)}</p>
       <p>${esc(t.guide)}</p>
+      <p class="sources" style="margin:6px 0;font-size:12.5px;line-height:1.5;color:#ece7dd">Sources: ${esc(sourceLine)}</p>
       <p class="prog">${earned ? '✓ Earned' : 'Not yet earned'} · Roadmap stage ${t.stage} · ${gradeLabel(t.grade)}</p>
     </section>`;
   }).join('');
