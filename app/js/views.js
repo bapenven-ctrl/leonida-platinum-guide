@@ -51,6 +51,22 @@ function shortSourceName(name) {
   return name;
 }
 
+// Bare source names for the one-line source note on each checklist row:
+// names only, no URLs, no annotations.
+function rowSourceName(name) {
+  if (name.includes('Exophase')) return 'Exophase';
+  if (name.includes('PSNProfiles')) return 'PSNProfiles';
+  if (name.includes('Leonida Platinum')) return 'Leonida Platinum roadmap notes';
+  return name;
+}
+
+// The counter chip carries the count's unit only when the unit is short
+// enough to fit on the row; longer labels stay in the detail pane's stepper.
+function shortUnit(label) {
+  if (!label) return '';
+  return label.length <= 16 ? ` ${label}` : '';
+}
+
 // A guide is written as three movements: what to do, where and how, and the
 // timing. Split it back into those labelled parts for the detail pane.
 export function guideParts(guide) {
@@ -73,12 +89,13 @@ export function renderHeader(trophies, progress) {
   document.getElementById('grade-tallies').innerHTML =
     `<b>${tally('platinum')}/${total('platinum')}</b> Platinum · <b>${tally('gold')}/${total('gold')}</b> Gold · ` +
     `<b>${tally('silver')}/${total('silver')}</b> Silver · <b>${tally('bronze')}/${total('bronze')}</b> Bronze`;
-  const next = roadmapOrder(trophies).filter((t) => !progress.earned.includes(t.id)).slice(0, 3);
+  // Spoiler-hidden trophies are skipped entirely, so the strip always names
+  // the next three unearned trophies the reader can actually see.
+  const next = roadmapOrder(trophies)
+    .filter((t) => !progress.earned.includes(t.id) && !isShielded(t, progress))
+    .slice(0, 3);
   document.getElementById('next-up').innerHTML = next.length
-    ? `<strong>Next up</strong> — ` + next.map((t) => {
-        const hidden = isShielded(t, progress);
-        return `<span class="nu-item">${esc(hidden ? SHIELD_TEXT : t.name)}</span>`;
-      }).join(' · ')
+    ? `<strong>Next up</strong> — ` + next.map((t) => `<span class="nu-item">${esc(t.name)}</span>`).join(' · ')
     : `<strong>Next up</strong> — nothing left. Leonida is yours.`;
 }
 
@@ -87,13 +104,14 @@ function rowHtml(trophy, progress, selectedId) {
   const hidden = isShielded(trophy, progress);
   const name = hidden ? SHIELD_TEXT : trophy.name;
   const desc = hidden ? 'Its name and description stay hidden until you earn it in the story.' : trophy.description;
-  const count = trophy.count != null && progress.counters[trophy.id] != null
-    ? `<span class="tag count">${progress.counters[trophy.id]} / ${trophy.count}</span>` : '';
+  const count = trophy.count != null
+    ? `<span class="tag count">${progress.counters[trophy.id] ?? 0} / ${trophy.count}${esc(shortUnit(trophy.countLabel))}</span>` : '';
   const miss = trophy.missable ? `<span class="tag miss">MISSABLE</span>` : '';
+  const sourceLine = trophy.sources.map((s) => rowSourceName(s.name)).join(' · ');
   return `<button type="button" class="row${earned ? ' earned' : ''}${trophy.id === selectedId ? ' selected' : ''}" data-row="${trophy.id}">
     <input type="checkbox" data-check="${trophy.id}" ${earned ? 'checked' : ''} aria-label="Mark ${esc(trophy.name)} earned">
     <span class="dot ${trophy.grade}"></span>
-    <span class="body"><span class="name">${esc(name)}</span><br><span class="desc">${esc(desc)}</span></span>
+    <span class="body"><span class="name">${esc(name)}</span><br><span class="desc">${esc(desc)}</span><br><span class="srcline">Sources: ${esc(sourceLine)}</span></span>
     <span class="tags">${miss}${count}<span class="tag grade-${trophy.grade}">${gradeLabel(trophy.grade)}</span><span class="tag">${kindLabel(trophy.kind)}</span></span>
   </button>`;
 }
@@ -134,9 +152,22 @@ function detailHtml(trophy, progress) {
 }
 
 export function renderChecklist(main, trophies, progress, selectedId) {
-  const rows = trophies.length
-    ? trophies.map((t) => rowHtml(t, progress, selectedId)).join('')
-    : `<p class="empty">No trophies match the current filters.</p>`;
+  // Rows are grouped under stage header bars in roadmap order. Grouping
+  // follows the active filter/search: a stage bar appears only when that
+  // stage has at least one visible row, and its tally counts visible rows.
+  let rows;
+  if (!trophies.length) {
+    rows = `<p class="empty">No trophies match the current filters.</p>`;
+  } else {
+    const ordered = roadmapOrder(trophies);
+    rows = STAGES.map((s) => {
+      const group = ordered.filter((t) => t.stage === s.n);
+      if (!group.length) return '';
+      const done = group.filter((t) => progress.earned.includes(t.id)).length;
+      const head = `<div class="stage-head">Stage ${s.n} — ${esc(s.title)} · ${done}/${group.length} earned in stage</div>`;
+      return head + group.map((t) => rowHtml(t, progress, selectedId)).join('');
+    }).join('');
+  }
   const selected = trophies.find((t) => t.id === selectedId)
     || null;
   main.innerHTML = `<div class="split"><div class="rows">${rows}</div>${detailHtml(selected, progress)}</div>`;

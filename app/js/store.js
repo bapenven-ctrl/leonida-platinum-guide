@@ -61,11 +61,11 @@ export function resetProgress() {
 
 // Demo progress used only for the ?shot= screenshots, so the contact sheet
 // shows a tracker mid-run: a believable spread of story and activity wins,
-// plus three counters part-way to their targets.
+// plus counters part-way to their targets across the counted trophies.
 export function demoProgress() {
   return {
     earned: [2, 3, 4, 5, 8, 9, 10, 16, 20, 21, 35, 44, 46],
-    counters: { 17: 31, 15: 140, 31: 57 },
+    counters: { 15: 140, 17: 31, 28: 6, 30: 1, 31: 57, 32: 22, 35: 64, 40: 2, 42: 19, 54: 3, 55: 4 },
     spoiler: false,
   };
 }
